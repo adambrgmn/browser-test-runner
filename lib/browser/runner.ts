@@ -1,8 +1,12 @@
 import * as duration from '../utils/duration.js';
 
-const testFiles = ['./example/create-element.test.ts'];
+const testFiles = ['./example/create-element.test.tsx'];
 
-const tests = new Map<string, () => void | Promise<void>>();
+type Callback = () => void | Promise<void>;
+type Phase = 'before' | 'beforeEach' | 'after' | 'afterEach';
+
+const tests = new Map<string, Callback>();
+const phaseCallbacks = new Set<[Phase, Callback]>();
 
 run();
 
@@ -11,9 +15,14 @@ async function run() {
     for (let path of testFiles) {
       let url = new URL('/suite', window.location.origin);
       url.searchParams.set('suite', path);
+
       await import(url.toString());
 
+      await runPhase('before');
+
       for (let [name, callback] of tests) {
+        await runPhase('beforeEach');
+
         console.log(`RUNNING: ${name}`);
         let start = performance.now();
         try {
@@ -26,8 +35,13 @@ async function run() {
           console.error(error);
         }
 
-        cleanup();
+        await runPhase('afterEach');
       }
+
+      await runPhase('after');
+
+      tests.clear();
+      phaseCallbacks.clear();
     }
   } catch (error) {
     console.error(error);
@@ -35,20 +49,43 @@ async function run() {
   }
 }
 
+async function runPhase(phase: Phase) {
+  for (let [p, callback] of phaseCallbacks) {
+    if (p === phase) await callback();
+  }
+}
+
 window.it = it;
-function it(title: string, callback: () => void | Promise<void>) {
+function it(title: string, callback: Callback) {
   tests.set(title, callback);
 }
 
-function cleanup() {
-  let children = Array.from(document.body.childNodes);
-  for (let child of children) {
-    document.body.removeChild(child);
-  }
+window.before = before;
+function before(callback: Callback) {
+  phaseCallbacks.add(['before', callback]);
+}
+
+window.beforeEach = beforeEach;
+function beforeEach(callback: Callback) {
+  phaseCallbacks.add(['beforeEach', callback]);
+}
+
+window.after = after;
+function after(callback: Callback) {
+  phaseCallbacks.add(['after', callback]);
+}
+
+window.afterEach = afterEach;
+function afterEach(callback: Callback) {
+  phaseCallbacks.add(['afterEach', callback]);
 }
 
 declare global {
   interface Window {
     it: typeof it;
+    before: typeof before;
+    beforeEach: typeof beforeEach;
+    after: typeof after;
+    afterEach: typeof afterEach;
   }
 }
