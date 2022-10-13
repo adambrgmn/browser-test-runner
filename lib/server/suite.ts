@@ -25,13 +25,14 @@ function alias(): esbuild.Plugin {
   return {
     name: 'browser-test-runner-alias',
     setup(build) {
-      build.onResolve({ filter: /^browser-test-runner$/ }, (args) => ({
+      build.onResolve({ filter: /^browser-test-runner\/browser$/ }, (args) => ({
         path: args.path,
         namespace,
       }));
 
       build.onLoad({ filter: /.*/, namespace }, () => {
         let contents = `
+          export const expect = window.expect;
           export const it = window.it;
           export const before = window.before;
           export const beforeEach = window.beforeEach;

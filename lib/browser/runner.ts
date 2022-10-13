@@ -1,6 +1,8 @@
+import { AssertionError, assert, expect, should } from 'chai';
+
 import * as duration from '../utils/duration.js';
 
-const testFiles = ['./example/create-element.test.tsx'];
+const testFiles = ['./example/src/create-element.test.tsx'];
 
 type Callback = () => void | Promise<void>;
 type Phase = 'before' | 'beforeEach' | 'after' | 'afterEach';
@@ -32,7 +34,12 @@ async function run() {
         } catch (error) {
           let delta = performance.now() - start;
           console.error(`FAILED: ${name} (${duration.format(delta)})`);
-          console.error(error);
+          if (error instanceof AssertionError) {
+            console.error(error.message);
+            console.error(error.stack);
+          } else {
+            console.error(error);
+          }
         }
 
         await runPhase('afterEach');
@@ -55,37 +62,31 @@ async function runPhase(phase: Phase) {
   }
 }
 
+window.assert = assert;
+window.expect = expect;
+window.should = should as unknown as any;
+
 window.it = it;
-function it(title: string, callback: Callback) {
+export function it(title: string, callback: Callback) {
   tests.set(title, callback);
 }
 
 window.before = before;
-function before(callback: Callback) {
+export function before(callback: Callback) {
   phaseCallbacks.add(['before', callback]);
 }
 
 window.beforeEach = beforeEach;
-function beforeEach(callback: Callback) {
+export function beforeEach(callback: Callback) {
   phaseCallbacks.add(['beforeEach', callback]);
 }
 
 window.after = after;
-function after(callback: Callback) {
+export function after(callback: Callback) {
   phaseCallbacks.add(['after', callback]);
 }
 
 window.afterEach = afterEach;
-function afterEach(callback: Callback) {
+export function afterEach(callback: Callback) {
   phaseCallbacks.add(['afterEach', callback]);
-}
-
-declare global {
-  interface Window {
-    it: typeof it;
-    before: typeof before;
-    beforeEach: typeof beforeEach;
-    after: typeof after;
-    afterEach: typeof afterEach;
-  }
 }

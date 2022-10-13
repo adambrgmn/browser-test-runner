@@ -1,0 +1,18 @@
+diff --git a/node_modules/@testing-library/user-event/dist/esm/index.js b/node_modules/@testing-library/user-event/dist/esm/index.js
+index a93f40e..5aae799 100644
+--- a/node_modules/@testing-library/user-event/dist/esm/index.js
++++ b/node_modules/@testing-library/user-event/dist/esm/index.js
+@@ -1,2 +1,2 @@
+-export { userEvent as default } from './setup/index.js';
++export { userEvent } from './setup/index.js';
+ export { PointerEventsCheckLevel } from './options.js';
+diff --git a/node_modules/@testing-library/user-event/dist/types/index.d.ts b/node_modules/@testing-library/user-event/dist/types/index.d.ts
+index c63cb32..6bacdfe 100644
+--- a/node_modules/@testing-library/user-event/dist/types/index.d.ts
++++ b/node_modules/@testing-library/user-event/dist/types/index.d.ts
+@@ -1,4 +1,4 @@
+-export { userEvent as default } from './setup';
++export { userEvent } from './setup';
+ export type { keyboardKey } from './system/keyboard';
+ export type { pointerKey } from './system/pointer';
+ export { PointerEventsCheckLevel } from './options';
