@@ -1,6 +1,6 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { afterEach, expect, it } from 'browser-test-runner/browser';
+import { afterEach, expect, it } from 'browser-test-runner/test';
 import React from 'react';
 
 import { EmailInput } from './create-element.js';
@@ -18,17 +18,16 @@ it('should render an input element with label', () => {
 it('should be possible to input text into the element', async () => {
   render(<EmailInput />);
   let element = screen.getByLabelText<HTMLInputElement>('E-mail:');
-  await userEvent.type(element, 'adam@fransvilhelm.com');
-  expect(element).toHaveValue('adam@fransvilhelm.coms');
+  await userEvent.type(element, 'adam@fransvilhelm.coms');
+  expect(element).toHaveValue('adam@fransvilhelm.com');
 });
 
 for (let index of Array.from({ length: 50 }, (_, i) => i + 1)) {
-  it(`should be possible to input text into the element ${index}`, async () => {
-    let text = Array.from({ length: index }, () => 'a').join(''); // `adam_${index}@fransvilhelm.com`;
-
+  it(`should be possible to input text into the element ${index}`, () => {
+    let text = Array.from({ length: index }, () => 'a').join('');
     render(<EmailInput />);
     let element = screen.getByLabelText<HTMLInputElement>('E-mail:');
-    await userEvent.type(element, text);
+    fireEvent.change(element, { target: { value: text } });
     expect(element).toHaveValue(text);
   });
 }

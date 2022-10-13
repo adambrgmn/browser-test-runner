@@ -12,9 +12,9 @@
       "types": "./dist/main.d.ts",
       "import": "./dist/main.js"
     },
-    "./browser": {
-      "types": "./dist/browser/browser.d.ts",
-      "import": "./dist/browser/browser.js"
+    "./test": {
+      "types": "./dist/browser/test.d.ts",
+      "import": "./dist/browser/test.js"
     }
   },
   "files": [
