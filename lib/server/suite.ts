@@ -1,6 +1,9 @@
+import { createRequire } from 'node:module';
 import * as path from 'node:path';
 
 import * as esbuild from 'esbuild';
+
+const require = createRequire(import.meta.url);
 
 export async function loadSuite(testFile: string, cwd: string) {
   let filePath = path.join(cwd, testFile);
@@ -13,35 +16,8 @@ export async function loadSuite(testFile: string, cwd: string) {
     platform: 'browser',
     sourcemap: 'inline',
     write: false,
-    plugins: [alias()],
+    inject: [require.resolve('@testing-library/jest-dom')],
   });
 
   return { source: result.outputFiles[0]?.text ?? 'throw new Error("Module not built properly")' } as const;
-}
-
-function alias(): esbuild.Plugin {
-  let namespace = 'browser-test-runner-alias';
-
-  return {
-    name: 'browser-test-runner-alias',
-    setup(build) {
-      build.onResolve({ filter: /^browser-test-runner\/browser$/ }, (args) => ({
-        path: args.path,
-        namespace,
-      }));
-
-      build.onLoad({ filter: /.*/, namespace }, () => {
-        let contents = `
-          export const expect = window.expect;
-          export const it = window.it;
-          export const before = window.before;
-          export const beforeEach = window.beforeEach;
-          export const after = window.after;
-          export const afterEach = window.afterEach;
-        `;
-
-        return { contents, loader: 'ts' };
-      });
-    },
-  };
 }

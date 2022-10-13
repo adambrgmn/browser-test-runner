@@ -1,6 +1,7 @@
+import path from 'node:path';
+import process from 'node:process';
+
 import { createTestServer } from './main.js';
 
-(async () => {
-  let server = await createTestServer();
-  server.listen();
-})();
+let server = await createTestServer(path.join(process.cwd(), '/example'));
+server.listen();

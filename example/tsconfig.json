@@ -4,7 +4,7 @@
     "module": "NodeNext",
     // "moduleResolution": "NodeNext",
     "lib": ["ESNext", "DOM"],
-    "types": ["node"],
+    "types": ["node", "@testing-library/jest-dom"],
     "allowJs": true,
     "checkJs": true,
     "skipLibCheck": true,

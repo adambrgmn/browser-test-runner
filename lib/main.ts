@@ -42,7 +42,6 @@ export async function createTestServer(cwd = process.cwd()) {
       }
 
       case '/suite': {
-        console.log('Handle serving the requested test suite');
         let suite = requestUrl.searchParams.get('suite');
         if (typeof suite !== 'string') {
           micro.send(res, 404, 'Test suite not found');
