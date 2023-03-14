@@ -5,11 +5,13 @@ import { Hono } from 'hono';
 
 import { prepareRunner } from './server/runner.js';
 import { loadSuite } from './server/suite.js';
+import { SharedWriter } from './utils/shared-writer.js';
 
 export async function createTestServer(cwd = process.cwd()) {
   const runner = await prepareRunner();
 
-  const app = new Hono();
+  const app = new Hono({ strict: true });
+  const writer = new SharedWriter();
 
   app.get('/', (context) => {
     return context.html(html`<!DOCTYPE html>
@@ -34,6 +36,12 @@ export async function createTestServer(cwd = process.cwd()) {
 
     let test = await loadSuite(decodeURIComponent(suite), cwd);
     return context.body(test.source, 200, { 'Content-Type': 'application/javascript' });
+  });
+
+  app.post('/log', async (context) => {
+    let message = await context.req.json();
+    writer.write(message);
+    return context.json({ success: true });
   });
 
   function listen(port = 3000) {

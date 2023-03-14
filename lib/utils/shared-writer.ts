@@ -1,12 +1,51 @@
 import chalk from 'chalk';
 import { JestAssertionError } from 'expect';
 
-import * as duration from '../utils/duration.js';
-import { SuiteResult, TestResult } from './types.js';
+import { SuiteResult, TestResult } from '../browser/types.js';
+import * as duration from './duration.js';
 
-type Format = 'extended' | 'compact';
+interface Message<Context = unknown> {
+  level: 'info' | 'error' | 'test-result' | 'suite-result' | 'total-result';
+  text: string;
+  context?: Context;
+}
 
-export function testResult(result: TestResult, format: Format) {
+export class SharedWriter {
+  write(message: Message) {
+    switch (message.level) {
+      case 'info':
+        console.info(message.text);
+        if (message.context) console.log(message.context);
+        break;
+
+      case 'error':
+        console.error(message.text);
+        if (message.context) console.error(message.context);
+        break;
+
+      case 'test-result': {
+        let result = message.context as TestResult;
+        testResult(result, 'compact');
+        break;
+      }
+
+      case 'suite-result': {
+        break;
+      }
+
+      case 'total-result': {
+        let result = message.context as SuiteResult[];
+        totalResult(result);
+        break;
+      }
+
+      default:
+        throw new Error(`Using unknown message level "${message.level}"`);
+    }
+  }
+}
+
+export function testResult(result: TestResult, format: 'extended' | 'compact') {
   let message = `${result.title} (${duration.format(result.duration)})`;
 
   switch (result.state) {

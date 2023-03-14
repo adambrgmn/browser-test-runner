@@ -1,4 +1,4 @@
-import * as log from './logging.js';
+import { Logger } from './Logger.js';
 import { Callback, Phase, SuiteResult, TestResult } from './types.js';
 
 export class Suite {
@@ -6,9 +6,11 @@ export class Suite {
   #phaseCallbacks = new Array<[Phase, Callback]>();
 
   #filePath: string;
+  #log: Logger;
 
-  constructor(filePath: string) {
+  constructor(filePath: string, logger: Logger) {
     this.#filePath = filePath;
+    this.#log = logger;
   }
 
   async init() {
@@ -34,7 +36,7 @@ export class Suite {
       let test = this.#tests.shift();
       if (test == null) break;
       let result = await this.#runTest(...test);
-      log.testResult(result, 'compact');
+      this.#log.write({ level: 'test-result', text: 'Test completed', context: result });
       results.push(result);
     }
 

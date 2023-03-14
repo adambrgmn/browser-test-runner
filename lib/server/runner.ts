@@ -9,7 +9,6 @@ export async function prepareRunner() {
   const result = await esbuild.build({
     entryPoints: [path.join(dirname(import.meta.url), '../browser/runner.js')],
     bundle: true,
-    target: 'es2020',
     format: 'esm',
     platform: 'browser',
     sourcemap: 'inline',
