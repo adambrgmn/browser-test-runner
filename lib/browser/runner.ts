@@ -5,7 +5,7 @@ import * as log from './logging.js';
 import { Expect2, SuiteResult } from './types.js';
 
 window.expect = expect as Expect2;
-const testFiles = ['./src/create-element.test.tsx'];
+const testFiles = ['./src/Button.test.tsx', './src/EmailInput.test.tsx'];
 
 run();
 
@@ -15,8 +15,8 @@ async function run() {
     for (let path of testFiles) {
       let suite = new Suite(path);
       await suite.init();
-      let suiteResults = await suite.run();
-      results.push(suiteResults);
+      let result = await suite.run();
+      results.push(result);
     }
 
     log.totalResult(results);

@@ -41,17 +41,16 @@
     "prepare": "husky install"
   },
   "dependencies": {
+    "@hono/node-server": "^0.3.0",
     "@testing-library/jest-dom": "^5.16.5",
-    "chai": "^4.3.6",
     "chalk": "^5.1.2",
     "esbuild": "^0.15.10",
     "expect": "^29.1.2",
-    "micro": "^9.4.1"
+    "hono": "^3.0.5"
   },
   "devDependencies": {
     "@changesets/cli": "^2.25.0",
     "@trivago/prettier-plugin-sort-imports": "^3.3.0",
-    "@types/chai": "^4.3.3",
     "@types/node": "^18.8.3",
     "@typescript-eslint/eslint-plugin": "^5.40.0",
     "@typescript-eslint/parser": "^5.40.0",

@@ -1,72 +1,56 @@
-import { IncomingMessage, Server } from 'node:http';
 import process from 'node:process';
 
-import micro from 'micro';
+import { serve } from '@hono/node-server';
+import { Hono } from 'hono';
 
 import { prepareRunner } from './server/runner.js';
 import { loadSuite } from './server/suite.js';
 
 export async function createTestServer(cwd = process.cwd()) {
-  const baseUrl = new URL(`http://localhost:3000`);
   const runner = await prepareRunner();
 
-  const server = micro.default(async (req, res) => {
-    const requestUrl = url(req);
+  const app = new Hono();
 
-    switch (requestUrl.pathname) {
-      case '/':
-        // Handle serving main test document
-        res.setHeader('Content-Type', 'text/html');
-        micro.send(
-          res,
-          200,
-          /* HTML */ `<!DOCTYPE html>
-            <html lang="en">
-              <head>
-                <meta charset="UTF-8" />
-                <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-                <title>Document</title>
-              </head>
-              <body>
-                <script type="module" src="/runner"></script>
-              </body>
-            </html>`,
-        );
-        break;
+  app.get('/', (context) => {
+    return context.html(html`<!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <meta charset="UTF-8" />
+          <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <title>Document</title>
+        </head>
+        <body>
+          <script type="module">
+            ${runner.source};
+          </script>
+        </body>
+      </html>`);
+  });
 
-      case '/runner': {
-        res.setHeader('Content-Type', 'application/javascript');
-        micro.send(res, 200, runner.source);
-        break;
-      }
+  app.get('/suite', async (context) => {
+    let suite = context.req.query('suite');
+    if (typeof suite !== 'string') return context.notFound();
 
-      case '/suite': {
-        let suite = requestUrl.searchParams.get('suite');
-        if (typeof suite !== 'string') {
-          micro.send(res, 404, 'Test suite not found');
-          return;
-        }
-
-        let test = await loadSuite(suite, cwd);
-
-        res.setHeader('Content-Type', 'application/javascript');
-        micro.send(res, 200, test.source);
-        break;
-      }
-    }
-  }) as unknown as Server;
+    let test = await loadSuite(decodeURIComponent(suite), cwd);
+    return context.body(test.source, 200, { 'Content-Type': 'application/javascript' });
+  });
 
   function listen(port = 3000) {
-    baseUrl.port = `${port}`;
-    server.listen(Number(baseUrl.port), () => {
-      console.log(`Server listening on ${baseUrl.toString()}`);
-    });
+    return serve({ ...app, port });
   }
 
-  return { listen, server } as const;
+  return { listen, app } as const;
 }
 
-function url(req: IncomingMessage) {
-  return new URL(req.url ?? '/', `http://${req.headers.host}`);
+function html(parts: TemplateStringsArray, ...interpolated: string[]): string {
+  let result = '';
+
+  for (let part of parts) {
+    result += part;
+    let interpolation = interpolated.shift();
+    if (interpolation != null) result += interpolation;
+  }
+
+  return result;
 }
